@@ -68,6 +68,48 @@ module.exports.uninstalled = function(req, res) {
 };
 ~~~
 
+## Custom Middleware (optional)
+
+To add custom middleware methods that run after webhooks have been verified but before the webhook handler methods have been fired, add an `index.js` file to the webhook handler directy you specified in options.directory.
+
+**Please note that the name of the methods here to not matter**. *However*, keep in mind that **all** methods in this index.js file will be mounted as middleware. 
+
+~~~
+# /webhooks_handlers/index.js
+
+/* 
+    Shopify sometimes sends duplicate webhooks, this
+    example middlware prevents webhooks from being 
+    processed multiple times.
+*/
+module.exports.preventDuplicateWebhooks = function(req, res, next) {
+    var hmac = req.headers['x-shopify-hmac-sha256'];
+    db.webhooks.getOrCreate(hmac, function(err, created) {
+        if (err) return req.sendStatus(500); // let shopify know something went wrong
+        if (created) return next(); // continue processing webhook
+        req.sendStatus(200); // already processed, send 200 OK
+    });
+};
+~~~
+
+If you need to run multiple middleware functions in a specific order, simply export a single array of functions. 
+
+~~~
+# /webhooks_handlers/index.js
+
+function middlewareOne(req, res) {};
+function middlewareTwo(req, res) {};
+function middlewareThree(req, res) {};
+
+module.exports.customMiddleware = [
+    middlewareTwo,
+    middlewareOne,
+    middlewareThree  
+];
+~~~
+
+
+
 ##Configuration options
 
 **require('express-shopify-webhooks')([options])**
