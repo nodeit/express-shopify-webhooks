@@ -17,7 +17,9 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.14.1",
-    "debug": "^2.2.0",
-    "express": "^4.13.3"
+    "debug": "^2.2.0"
+  },
+  "peerDependencies": {
+    "express": ">=4.13.x"
   }
 }
